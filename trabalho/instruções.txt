@@ -1,0 +1,54 @@
+PASSO 1: INICIALIZAR O AMBIENTE
+
+Abra o terminal na pasta raiz do projeto (onde está o docker-compose.yml).
+
+Execute o comando para subir os containers:
+$ docker-compose up --build -d
+
+PASSO 2: ACESSAR AS INTERFACES
+
+Nginx (Servidor 1): http://localhost:8080
+
+Apache (Servidor 2): http://localhost:8081
+
+Prometheus (Métricas): http://localhost:9090
+
+Grafana (Dashboards): http://localhost:3000
+
+Nota: O Login/Senha do Grafana é admin / admin.
+
+PASSO 3: CONFIGURAR O GRAFANA
+
+Acesse o Grafana (http://localhost:3000).
+
+Adicione a fonte de dados (Data Source):
+
+Vá em "Connections" > "Data Sources" > "Add new data source".
+
+Escolha "Prometheus".
+
+Em "Prometheus server URL", digite: http://prometheus:9090
+
+Clique em "Save & Test" (deve aparecer verde).
+
+Importe os Dashboards:
+
+Vá em "Dashboards" > "New" > "Import".
+
+Digite o ID: 12708 (para Nginx) e clique em Load. Selecione o Prometheus criado.
+
+Repita o processo com o ID: 3894 (para Apache).
+
+PASSO 4: EXECUTAR OS TESTES DE CARGA
+
+O teste é executado de dentro do container 'cliente_python' para garantir que
+esteja na mesma rede Docker (mynet: 60.45.0.0/24).
+
+Entre no terminal do container cliente:
+$ docker exec -it cliente_python /bin/bash
+
+Execute o script de testes automatizado:
+
+python3 testes.py --requests 1000 --runs 10
+
+Isso executará 10 rodadas de 1000 requisições para cada servidor.

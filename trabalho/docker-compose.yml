@@ -1,0 +1,92 @@
+services:
+  # --- SERVIDOR 1: NGINX ---
+  nginx:
+    image: nginx:alpine
+    container_name: servidor_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./www:/usr/share/nginx/html
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.10
+    ports:
+      - "8080:80"
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx_exporter
+    command: -nginx.scrape-uri http://60.45.0.10:80/stub_status
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.12
+
+  # --- SERVIDOR 2: APACHE (Configuração Simplificada) ---
+  apache:
+    image: httpd:2.4
+    container_name: servidor_apache
+    # Truque: Injeta a configuração de status na inicialização sem precisar editar arquivos
+    command: >
+      /bin/sh -c "echo 'LoadModule status_module modules/mod_status.so' >> /usr/local/apache2/conf/httpd.conf &&
+      echo '<Location /server-status>' >> /usr/local/apache2/conf/httpd.conf &&
+      echo 'SetHandler server-status' >> /usr/local/apache2/conf/httpd.conf &&
+      echo 'Require all granted' >> /usr/local/apache2/conf/httpd.conf &&
+      echo '</Location>' >> /usr/local/apache2/conf/httpd.conf &&
+      httpd-foreground"
+    volumes:
+      - ./www:/usr/local/apache2/htdocs/
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.20
+    ports:
+      - "8081:80"
+
+  apache-exporter:
+    image: lusotycoon/apache-exporter:latest
+    container_name: apache_exporter
+    command: --scrape_uri http://60.45.0.20:80/server-status/?auto
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.22
+
+  # --- OBSERVABILIDADE ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.30
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.31
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  # --- CLIENTE ---
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.cliente
+    container_name: cliente_python
+    networks:
+      mynet:
+        ipv4_address: 60.45.0.50
+    volumes:
+      - ./results:/app/results
+    entrypoint: ["tail", "-f", "/dev/null"]
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 60.45.0.0/24

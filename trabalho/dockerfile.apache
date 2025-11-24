@@ -1,0 +1,17 @@
+FROM httpd:2.4
+
+# 1. Habilita o módulo de status (necessário para o Prometheus)
+# Na versão Debian, a sintaxe do arquivo costuma ser mais padrão.
+RUN sed -i \
+    's/#LoadModule status_module/LoadModule status_module/' \
+    /usr/local/apache2/conf/httpd.conf
+
+# 2. Define o ServerName para evitar avisos no log
+RUN echo "ServerName localhost" >> /usr/local/apache2/conf/httpd.conf
+
+# 3. Adiciona a configuração do endpoint /server-status no final do arquivo
+RUN echo "" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "<Location /server-status>" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "    SetHandler server-status" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "    Require all granted" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "</Location>" >> /usr/local/apache2/conf/httpd.conf
