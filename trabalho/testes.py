@@ -51,7 +51,7 @@ def summary(latencies):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--requests', type=int, default=500, help='Requisições por rodada')
-    parser.add_argument('--runs', type=int, default=10, help='Número de rodadas (Min 10 pelo PDF)')
+    parser.add_argument('--runs', type=int, default=10, help='Número de rodadas')
     parser.add_argument('--outdir', default='results')
     args = parser.parse_args()
 
