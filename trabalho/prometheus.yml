@@ -4,8 +4,8 @@ global:
 scrape_configs:
   - job_name: "nginx_job"
     static_configs:
-      - targets: ["60.45.0.12:9113"] # IP do nginx-exporter
+      - targets: ["60.45.0.12:9113"]
 
   - job_name: "apache_job"
     static_configs:
-      - targets: ["60.45.0.22:9117"] # IP do apache-exporter
+      - targets: ["60.45.0.22:9117"]

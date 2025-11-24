@@ -1,5 +1,4 @@
 services:
-  # --- SERVIDOR 1: NGINX ---
   nginx:
     image: nginx:alpine
     container_name: servidor_nginx
@@ -20,11 +19,9 @@ services:
       mynet:
         ipv4_address: 60.45.0.12
 
-  # --- SERVIDOR 2: APACHE (Configuração Simplificada) ---
   apache:
     image: httpd:2.4
     container_name: servidor_apache
-    # Truque: Injeta a configuração de status na inicialização sem precisar editar arquivos
     command: >
       /bin/sh -c "echo 'LoadModule status_module modules/mod_status.so' >> /usr/local/apache2/conf/httpd.conf &&
       echo '<Location /server-status>' >> /usr/local/apache2/conf/httpd.conf &&
@@ -48,7 +45,6 @@ services:
       mynet:
         ipv4_address: 60.45.0.22
 
-  # --- OBSERVABILIDADE ---
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -71,7 +67,6 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
 
-  # --- CLIENTE ---
   client:
     build:
       context: .
